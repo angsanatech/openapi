@@ -271,7 +271,7 @@
                 "tags": [
                     "iBMS"
                 ],
-                "summary": "Register webhook endpoint for push events from API client to iBMS server",
+                "summary": "Register a webhook endpoint for receiving push events from the iBMS server.",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -328,7 +328,7 @@
                     "Webhook Events"
                 ],
                 "summary": "Webhook notification for iBMS events",
-                "description": "Sent by API client to iBMS server about any registered events. The payload includes `event`, `webhookId`, and event-specific content under `eventData`.",
+                "description": "Push notification from iBMS to the API client for registered events.",
                 "parameters": [
                     {
                         "name": "Authorization",
@@ -349,7 +349,7 @@
                                 "required": [
                                     "event",
                                     "webhookId",
-                                    "data"
+                                    "eventData"
                                 ],
                                 "properties": {
                                     "event": {
