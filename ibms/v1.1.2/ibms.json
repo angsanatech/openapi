@@ -125,7 +125,7 @@
                 "tags": [
                     "iBMS"
                 ],
-                "summary": "update a nomination",
+                "summary": "Update a nomination",
                 "parameters": [
                     {
                         "name": "operation",
@@ -327,8 +327,8 @@
                 "tags": [
                     "Webhook Events"
                 ],
-                "summary": "Webhook notification for iBMS events",
-                "description": "Push notification from iBMS to the API client for registered events.",
+                "summary": "Webhook notification on iBMS events",
+                "description": "Push notification from iBMS server to the API client on registered events.",
                 "parameters": [
                     {
                         "name": "Authorization",
