@@ -313,6 +313,11 @@
                                         "webhookId": {
                                             "type": "string",
                                             "example": "wh_123456"
+                                        },
+                                        "webhookToken": {
+                                            "type": "string",
+                                            "example": "whsec_abc123",
+                                            "description": "Secret token used to verify webhook calls."
                                         }
                                     }
                                 }
@@ -335,9 +340,10 @@
                         "in": "header",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "example": "Bearer whsec_abc123"
                         },
-                        "description": "Bearer token issued by iBMS."
+                        "description": "Bearer token generated specifically for webhook delivery by iBMS. This token is NOT the same as the API access token used by clients."
                     }
                 ],
                 "requestBody": {
@@ -348,7 +354,7 @@
                                 "type": "object",
                                 "required": [
                                     "event",
-                                    "webhookId",
+                                    "eventId",
                                     "eventData"
                                 ],
                                 "properties": {
@@ -357,10 +363,10 @@
                                         "example": "operation.complete",
                                         "description": "Name of the webhook event."
                                     },
-                                    "webhookId": {
+                                    "eventId": {
                                         "type": "string",
-                                        "example": "evt_123456",
-                                        "description": "Unique webhook event identifier for idempotency."
+                                        "example": "ev_123456",
+                                        "description": "Unique webhook event identifier for idempotency. The same event may be delivered multiple times. Clients must ensure idempotency using this eventId."
                                     },
                                     "eventData": {
                                         "description": "Event-specific payload.",
@@ -951,7 +957,6 @@
                     }
                 }
             }
-
         }
     }
 }
