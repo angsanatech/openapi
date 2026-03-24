@@ -3,7 +3,7 @@
     "info": {
         "title": "iBMS API Documentation",
         "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.",
-        "version": "1.1.2"
+        "version": "1.1.2-Build24Mar2026"
     },
     "servers": [
         {
@@ -292,7 +292,8 @@
                                         "items": {
                                             "type": "string",
                                             "enum": [
-                                                "operation.start",
+                                                "operation.alongside",
+                                                "operation.castoff",
                                                 "operation.complete"
                                             ]
                                         }
@@ -372,7 +373,10 @@
                                         "description": "Event-specific payload.",
                                         "oneOf": [
                                             {
-                                                "$ref": "#/components/schemas/EventOperationStart"
+                                                "$ref": "#/components/schemas/EventOperationAlongside"
+                                            },
+                                            {
+                                                "$ref": "#/components/schemas/EventOperationCastoff"
                                             },
                                             {
                                                 "$ref": "#/components/schemas/EventOperationComplete"
@@ -412,6 +416,9 @@
                         "type": "string",
                         "description": "Name of the barge used for the supply when supplySource='barge'",
                         "example": "GOLDEN BUNKER 1"
+                    },
+                    "supplySource": {
+                        "$ref": "#/components/schemas/SupplySource"
                     },
                     "bdnPartyName": {
                         "type": "string",
@@ -935,7 +942,40 @@
                     }
                 }
             },
-            "EventOperationStart": {
+            "EventData": {
+                "description": "Event-specific payload.",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/EventOperationAlongside"
+                    },
+                    {
+                        "$ref": "#/components/schemas/EventOperationCastoff"
+                    },
+                    {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BDN"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Loading"
+                            }
+                        ],
+                        "description": "Returned when event = operation.complete. Matches GET document response."
+                    }
+                ]
+            },
+            "EventOperationAlongside": {
+                "type": "object",
+                "properties": {
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-03-13T14:30:00+08:00",
+                        "description": "Timestamp of the event in ISO 8601 format including timezone offset."
+                    }
+                }
+            },
+            "EventOperationCastoff": {
                 "type": "object",
                 "properties": {
                     "timestamp": {
@@ -949,11 +989,23 @@
             "EventOperationComplete": {
                 "type": "object",
                 "properties": {
-                    "timestamp": {
+                    "operation": {
                         "type": "string",
-                        "format": "date-time",
-                        "example": "2026-03-13T14:30:00+08:00",
-                        "description": "Timestamp of the event in ISO 8601 format including timezone offset."
+                        "enum": [
+                            "delivery",
+                            "transfer",
+                            "loading"
+                        ]
+                    },
+                    "document": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BDN"
+                            },
+                            {
+                                "$ref": "#/components/schemas/Loading"
+                            }
+                        ]
                     }
                 }
             }
