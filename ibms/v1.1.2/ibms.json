@@ -967,6 +967,14 @@
             "EventOperationAlongside": {
                 "type": "object",
                 "properties": {
+                    "stemNo": {
+                        "type": "string",
+                        "example": "SO20250500127"
+                    },
+                    "refItemNo": {
+                        "type": "number",
+                        "example": 1
+                    },
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
@@ -978,6 +986,14 @@
             "EventOperationCastoff": {
                 "type": "object",
                 "properties": {
+                    "stemNo": {
+                        "type": "string",
+                        "example": "SO20250500127"
+                    },
+                    "refItemNo": {
+                        "type": "number",
+                        "example": 1
+                    },
                     "timestamp": {
                         "type": "string",
                         "format": "date-time",
