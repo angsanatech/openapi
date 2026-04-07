@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>API Versions</title>
   <style>
@@ -8,13 +9,15 @@
       text-align: center;
       margin-top: 100px;
     }
+
     a {
       display: block;
-      margin: 15px;
+      margin: 0px;
       font-size: 20px;
       text-decoration: none;
       color: #007bff;
     }
+
     a:hover {
       text-decoration: underline;
     }
@@ -22,10 +25,27 @@
 </head>
 
 <body>
-  <h1>IBMS API Documentation</h1>
-  <p>Select a version:</p>
 
-  <a href="./v1.1.2/index.html">Version 1.1.2</a>
-  <a href="./v1.0.1/index.html">Version 1.0.1</a>
+
+  <div style="display: inline-block; text-align: left;">
+    <h1>IBMS API Documentation</h1>
+    <a href="./v1.1.2/index.html">Version 1.1.2</a>
+    <ul style="margin-left: 0; padding-left: 0; list-style-position: inside;">
+      <li>Support bunker transfer & loading operation</li>
+      <li>Support webhook for push events</li>
+      <li>Push document via webhook</li>
+    </ul>
+    <p style="font-size: 12px; color: #666;">Last update: 4-Apr-2026</p>
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+    <a href="./v1.0.1/index.html">Version 1.0.1</a>
+    <ul style="margin-left: 0; padding-left: 0; list-style-position: inside;">
+      <li>First version from iBMS</li>
+      <li>Support bunker delivery operation</li>
+      <li>Pull document</li>
+    </ul>
+    <p style="font-size: 12px; color: #666;">Last update: 1-Aug-2025</p>
+  </div>
+
 </body>
+
 </html>
