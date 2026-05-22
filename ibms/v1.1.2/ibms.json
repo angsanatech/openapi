@@ -3,7 +3,7 @@
     "info": {
         "title": "iBMS API Documentation",
         "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.",
-        "version": "1.1.2-Build2May2026"
+        "version": "1.1.2-Build22May2026"
     },
     "servers": [
         {
