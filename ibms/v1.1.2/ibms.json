@@ -3,7 +3,7 @@
     "info": {
         "title": "iBMS API Documentation",
         "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.",
-        "version": "1.1.2-Build22May2026"
+        "version": "1.1.2-Build25May2026"
     },
     "servers": [
         {
@@ -629,6 +629,11 @@
                         "type": "string",
                         "example": "1000"
                     },
+                    "alongsideTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01 11:00:00"
+                    },
                     "commencePumpingTime": {
                         "type": "string",
                         "format": "date-time",
@@ -639,14 +644,14 @@
                         "format": "date-time",
                         "example": "2023-10-01 14:00:00"
                     },
-                    "alongsideTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 11:00:00"
-                    },
                     "durationOfDelivery": {
                         "type": "string",
                         "example": "02:19:56"
+                    },
+                    "castOffTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01 14:00:00"
                     },
                     "customerRating": {
                         "type": "string",
@@ -820,6 +825,21 @@
                         "type": "string",
                         "format": "date-time",
                         "example": "2023-10-01 11:00:00"
+                    },
+                    "commencePumpingTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01 12:00:00"
+                    },
+                    "completePumpingTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01 14:00:00"
+                    },
+                    "castOffTime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01 14:00:00"
                     },
                     "stemNo": {
                         "type": "string",
