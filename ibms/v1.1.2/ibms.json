@@ -819,7 +819,14 @@
                     },
                     "suppliedQuantity": {
                         "type": "string",
-                        "example": "1000"
+                        "example": "997",
+                        "description": "Quantity from supply source eg CQ/BL/BDN."
+
+                    },
+                    "suppliedQuantityMFM": {
+                        "type": "string",
+                        "example": "998",
+                        "description": "Quantity from supply source eg CQ/BL/BDN."
                     },
                     "alongsideTime": {
                         "type": "string",
