@@ -1,1243 +1,253 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-        "title": "iBMS API Documentation",
-        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|",
-        "version": "1.1.2-Build17Jun2026"
-    },
-    "servers": [
-        {
-            "url": "https://stgapi.bunkerflow.io",
-            "description": "Staging"
-        },
-        {
-            "url": "https://api.bunkerflow.io",
-            "description": "Production"
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Digital Bunkering — IBMS Webhook Event Trigger",
+    "version": "1.1.0",
+    "description": "Endpoint used by IBMS to trigger a webhook event for a bunkering order.\n\nThe order identity is supplied in parts (`stemNo` + optional `refItemNo`); the server derives the internal composite order id as `{stemNo}-{refItemNo}` when `refItemNo` is present, or `{stemNo}` when it is empty or null. The event is queued and delivered asynchronously to the caller's registered callback URL — a `200` here means *accepted for delivery*, not *delivered*."
+  },
+  "servers": [
+    {
+      "url": "https://{host}",
+      "description": "Environment host",
+      "variables": {
+        "host": {
+          "default": "api.example.com",
+          "description": "Replace with the actual environment host (dev / staging / production)"
         }
-    ],
-    "tags": [
-        {
-            "name": "iBMS",
-            "description": "Endpoints related to nomination management"
-        }
-    ],
-    "paths": {
-        "/external/ibms/authentication": {
-            "post": {
-                "tags": [
-                    "iBMS"
-                ],
-                "summary": "Authenticate user and get token",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/AuthRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Authentication successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/AuthResponse"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication failed",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/external/ibms/v1.1/push/{operation}": {
-            "description": "Create a nomination",
-            "post": {
-                "tags": [
-                    "iBMS"
-                ],
-                "summary": "Create a new nomination",
-                "parameters": [
-                    {
-                        "name": "operation",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "delivery",
-                                "transfer",
-                                "loading"
-                            ]
-                        },
-                        "description": "[New]Type of operation being pushed."
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Nomination"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SuccessResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "iBMS"
-                ],
-                "summary": "Update a nomination",
-                "parameters": [
-                    {
-                        "name": "operation",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "delivery",
-                                "transfer",
-                                "loading"
-                            ]
-                        },
-                        "description": "[New]Type of operation being pushed."
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Nomination"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SuccessResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/external/ibms/v1.1/pull/{operation}/{stemNo}/{refItemNo}": {
-            "description": "Retrieve completed document after nomination completion",
-            "get": {
-                "tags": [
-                    "iBMS"
-                ],
-                "summary": "Retrieve completed eBDN document",
-                "parameters": [
-                    {
-                        "name": "operation",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "delivery",
-                                "transfer",
-                                "loading"
-                            ]
-                        },
-                        "description": "[New] Type of operation being pushed."
-                    },
-                    {
-                        "name": "stemNo",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "refItemNo",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "attachment",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "all",
-                                "bdn"
-                            ],
-                            "default": "bdn"
-                        },
-                        "description": "Optional attachment file name to retrieve."
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/BDN"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/Loading"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error"
-                    }
-                }
-            }
-        },
-        "/external/ibms/v1.1/webhook/register": {
-            "post": {
-                "tags": [
-                    "iBMS"
-                ],
-                "summary": "Register a webhook endpoint for receiving push events from the iBMS server.",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "callbackUrl"
-                                ],
-                                "properties": {
-                                    "callbackUrl": {
-                                        "type": "string",
-                                        "format": "uri",
-                                        "example": "https://client.com/my-callback"
-                                    },
-                                    "events": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "enum": [
-                                                "operation.alongside",
-                                                "operation.castoff",
-                                                "operation.complete"
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Webhook registered successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "webhookId": {
-                                            "type": "string",
-                                            "example": "wh_123456"
-                                        },
-                                        "webhookToken": {
-                                            "type": "string",
-                                            "example": "whsec_abc123",
-                                            "description": "Secret token used to verify webhook calls."
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/webhook/event": {
-            "post": {
-                "tags": [
-                    "Webhook Events"
-                ],
-                "summary": "Webhook notification on iBMS events",
-                "description": "Push notification from iBMS server to the API client on registered events.",
-                "parameters": [
-                    {
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "Bearer whsec_abc123"
-                        },
-                        "description": "Bearer token generated specifically for webhook delivery by iBMS. This token is NOT the same as the API access token used by clients."
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "event",
-                                    "eventId",
-                                    "eventData"
-                                ],
-                                "properties": {
-                                    "event": {
-                                        "type": "string",
-                                        "example": "operation.complete",
-                                        "description": "Name of the webhook event."
-                                    },
-                                    "eventId": {
-                                        "type": "string",
-                                        "example": "ev_123456",
-                                        "description": "Unique webhook event identifier for idempotency. The same event may be delivered multiple times. Clients must ensure idempotency using this eventId."
-                                    },
-                                    "eventData": {
-                                        "description": "Event-specific payload.",
-                                        "oneOf": [
-                                            {
-                                                "$ref": "#/components/schemas/EventOperationAlongside"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/EventOperationCastoff"
-                                            },
-                                            {
-                                                "$ref": "#/components/schemas/EventOperationComplete"
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Webhook received successfully"
-                    },
-                    "401": {
-                        "description": "Invalid authentication token"
-                    }
-                }
-            }
-        },
-        "/external/ibms/v1.1/webhook/event/trigger": {
-            "post": {
-                "tags": [
-                    "External IBMS Webhooks"
-                ],
-                "operationId": "triggerIbmsWebhookEvent",
-                "summary": "Trigger a webhook event for an order",
-                "description": "Queues a webhook event for the caller's latest active registered webhook.\n\nProcessing order:\n1. Authenticate the JWT (`token` header or cookie).\n2. Resolve the caller's latest **active** webhook registration; `401` if none exists.\n3. Validate `event` against the globally allowed event types.\n4. Validate `event` is one of the event types that webhook registration subscribed to.\n5. Require a non-empty `stemNo`.\n6. Derive the order id and push the event onto the delivery queue.",
-                "security": [
-                    {
-                        "TokenHeaderAuth": []
-                    },
-                    {
-                        "TokenCookieAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/WebhookEventTriggerRequest"
-                            },
-                            "examples": {
-                                "withRefItemNo": {
-                                    "summary": "Order with a ref item number — resolves to order id \"S12345-1\"",
-                                    "value": {
-                                        "event": "operation.complete",
-                                        "stemNo": "S12345",
-                                        "refItemNo": "1"
-                                    }
-                                },
-                                "withoutRefItemNo": {
-                                    "summary": "Order without a ref item number — resolves to order id \"S12345\"",
-                                    "value": {
-                                        "event": "operation.complete",
-                                        "stemNo": "S12345",
-                                        "refItemNo": null
-                                    }
-                                },
-                                "loadingOperation": {
-                                    "summary": "Loading nomination — routes to the loading document builder",
-                                    "value": {
-                                        "event": "operation.complete",
-                                        "stemNo": "S12345",
-                                        "refItemNo": "2",
-                                        "isLoading": true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Event accepted and pushed onto the delivery queue.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MessageResponse"
-                                },
-                                "example": {
-                                    "message": "Pushed Event"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body — unknown event type, event type not subscribed to by the webhook registration, or missing `stemNo`.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/MessageResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/ErrorResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "invalidEventType": {
-                                        "summary": "`event` is not a recognised event type",
-                                        "value": {
-                                            "message": "Invalid event type"
-                                        }
-                                    },
-                                    "eventNotAllowed": {
-                                        "summary": "`event` is valid but not subscribed to by this webhook registration",
-                                        "value": {
-                                            "message": "Event type 'operation.castoff' is not allowed for this webhook"
-                                        }
-                                    },
-                                    "missingStemNo": {
-                                        "summary": "`stemNo` absent, null, empty, or whitespace-only",
-                                        "value": {
-                                            "message": "Missing stemNo"
-                                        }
-                                    },
-                                    "malformedToken": {
-                                        "summary": "Token present but could not be decoded",
-                                        "value": {
-                                            "error": "Signature verification failed"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication failed, or the caller has no active webhook registration.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/AuthErrorResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/StatusErrorResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "tokenNotFound": {
-                                        "summary": "No `token` header or cookie supplied",
-                                        "value": {
-                                            "error": "Token not found",
-                                            "token_exist": false
-                                        }
-                                    },
-                                    "invalidToken": {
-                                        "summary": "Token is blacklisted",
-                                        "value": {
-                                            "error": "Invalid token",
-                                            "token_exist": false
-                                        }
-                                    },
-                                    "noActiveWebhook": {
-                                        "summary": "Caller has not registered an active webhook",
-                                        "value": {
-                                            "status": "No active webhook found for user"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "402": {
-                        "description": "Returned by the authentication middleware when the token decodes but fails the validity check. Legacy behaviour — treat as an authentication failure.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                },
-                                "example": {
-                                    "error": "Not authorized!"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Unexpected server error while queueing the event.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorMessageResponse"
-                                },
-                                "example": {
-                                    "message": "Error processing webhook",
-                                    "error": "Unexpected exception: ..."
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "components": {
-        "schemas": {
-            "Nomination": {
-                "type": "object",
-                "properties": {
-                    "agent": {
-                        "type": "string",
-                        "example": "ABC Shipping"
-                    },
-                    "agentContactNo": {
-                        "type": "string",
-                        "example": "JASON POON +65 1234 5678"
-                    },
-                    "bargeName": {
-                        "type": "string",
-                        "description": "Name of the barge used for the supply when supplySource='barge'",
-                        "example": "GOLDEN BUNKER 1"
-                    },
-                    "supplySource": {
-                        "$ref": "#/components/schemas/SupplySource"
-                    },
-                    "bdnPartyName": {
-                        "type": "string",
-                        "example": "ABC BUNKER SUPPLIER PTE LTD"
-                    },
-                    "cargoOfficer": {
-                        "type": "string",
-                        "example": "JOHN DOE"
-                    },
-                    "cargoOfficerEmail": {
-                        "type": "string",
-                        "example": "PENG@DIB.COM"
-                    },
-                    "customer": {
-                        "type": "string",
-                        "example": "ABC SHIPPING PTE LTD"
-                    },
-                    "eta": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 12:00:00"
-                    },
-                    "jobType": {
-                        "type": "string",
-                        "enum": [
-                            "delivery",
-                            "transfer",
-                            "loading"
-                        ]
-                    },
-                    "nominationDate": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2023-10-01"
-                    },
-                    "operationType": {
-                        "type": "string",
-                        "enum": [
-                            "MFM"
-                        ]
-                    },
-                    "country": {
-                        "type": "string",
-                        "example": "SINGAPORE"
-                    },
-                    "port": {
-                        "type": "string",
-                        "example": "SINGAPORE"
-                    },
-                    "location": {
-                        "type": "string",
-                        "example": "ASSPU"
-                    },
-                    "sourceType": {
-                        "type": "string",
-                        "example": "IBMS"
-                    },
-                    "stemNo": {
-                        "type": "string",
-                        "example": "SO20250500127"
-                    },
-                    "surveyor": {
-                        "type": "string",
-                        "example": "SURVEYOR NAME"
-                    },
-                    "surveyorEmail": {
-                        "type": "string",
-                        "example": ""
-                    },
-                    "vesselIMO": {
-                        "type": "string",
-                        "example": "1234567"
-                    },
-                    "vesselName": {
-                        "type": "string",
-                        "example": "ABC VESSEL"
-                    },
-                    "company": {
-                        "type": "string",
-                        "example": "SWISS MARINE PTE LTD"
-                    },
-                    "grade": {
-                        "type": "string",
-                        "example": "LSFO 0.5% (RMG)"
-                    },
-                    "uom": {
-                        "type": "string",
-                        "enum": [
-                            "MT"
-                        ]
-                    },
-                    "quantity": {
-                        "type": "string",
-                        "example": "1000"
-                    },
-                    "mpaGrade": {
-                        "type": "string",
-                        "example": "VLSFO380"
-                    },
-                    "refItemNo": {
-                        "type": "number",
-                        "example": 1
-                    },
-                    "cargoMbl": {
-                        "type": "string",
-                        "example": "+6592961234"
-                    },
-                    "remarks": {
-                        "type": "string",
-                        "example": "(C) / 2ND JUNE PM ONWARDS / MAJESTIC / ETA 1ST 0800H"
-                    },
-                    "scheduleId": {
-                        "type": "string",
-                        "example": "1234567890"
-                    }
-                }
-            },
-            "BDN": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "example": "3585"
-                    },
-                    "bunkerTankerLicenceNo": {
-                        "type": "string",
-                        "example": "SB 0732H"
-                    },
-                    "bunkerTankerName": {
-                        "type": "string",
-                        "example": "GOLDEN BUNKER 1"
-                    },
-                    "fuelTypeName": {
-                        "type": "string",
-                        "description": "[NEW] Product name",
-                        "example": "VLSFO380"
-                    },
-                    "fuelTypeCode": {
-                        "type": "string",
-                        "example": "VLSFO380"
-                    },
-                    "refItemNo": {
-                        "type": "number",
-                        "example": 1
-                    },
-                    "operationDate": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2023-10-01"
-                    },
-                    "totalisersAutoPopulated": {
-                        "type": "string",
-                        "example": "no"
-                    },
-                    "reasonNotAutoPopulated": {
-                        "type": "string",
-                        "example": "Others"
-                    },
-                    "bunkerSupplierName": {
-                        "type": "string",
-                        "example": "ABC BUNKER SUPPLIER PTE LTD"
-                    },
-                    "bunkerSupplierUEN": {
-                        "type": "string",
-                        "example": "201234567D"
-                    },
-                    "bdnNo": {
-                        "type": "string",
-                        "example": "BDN1234567890"
-                    },
-                    "receiveVesselName": {
-                        "type": "string",
-                        "example": "ABC VESSEL"
-                    },
-                    "receiveVesselImoNo": {
-                        "type": "string",
-                        "example": "1234567"
-                    },
-                    "receiveVesselGt": {
-                        "type": "string",
-                        "example": "14965"
-                    },
-                    "ownerOperator": {
-                        "type": "string",
-                        "example": "ABC SHIPPING PTE LTD"
-                    },
-                    "deliveryLocationCode": {
-                        "type": "string",
-                        "example": "ASSPU"
-                    },
-                    "deliveryLocationName": {
-                        "type": "string",
-                        "example": "RAFFLES RESERVED ANCH"
-                    },
-                    "deliveryType": {
-                        "type": "string",
-                        "example": "MFM"
-                    },
-                    "supplyType": {
-                        "type": "string",
-                        "enum": [
-                            "I",
-                            "D"
-                        ],
-                        "example": "I"
-                    },
-                    "temperature": {
-                        "type": "string",
-                        "example": "50"
-                    },
-                    "suppliedQuantityBDN": {
-                        "type": "string",
-                        "example": "1000"
-                    },
-                    "alongsideTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 11:00:00"
-                    },
-                    "commencePumpingTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 12:00:00"
-                    },
-                    "completePumpingTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 14:00:00"
-                    },
-                    "durationOfDelivery": {
-                        "type": "string",
-                        "example": "02:19:56"
-                    },
-                    "castOffTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 14:00:00"
-                    },
-                    "customerRating": {
-                        "type": "string",
-                        "example": "5"
-                    },
-                    "protestNote": {
-                        "type": "string",
-                        "example": "no"
-                    },
-                    "density": {
-                        "type": "string",
-                        "example": "0.850"
-                    },
-                    "flashPoint": {
-                        "type": "string",
-                        "example": "60"
-                    },
-                    "sulphurContent": {
-                        "type": "string",
-                        "example": "0.5"
-                    },
-                    "viscosity": {
-                        "type": "string",
-                        "example": "100"
-                    },
-                    "waterContent": {
-                        "type": "string",
-                        "example": "0.1"
-                    },
-                    "cargoOfficerName": {
-                        "type": "string",
-                        "example": "JOHN DOE"
-                    },
-                    "labSeal": {
-                        "type": "string",
-                        "example": "123456"
-                    },
-                    "labCounterSeal": {
-                        "type": "string",
-                        "example": "223456"
-                    },
-                    "labCounterSeal2": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "vesselSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "vesselCounterSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "vesselCounterSeal2": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "marpolSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "marpolCounterSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "marpolCounterSeal2": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "bunkerSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "bunkerCounterSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "bunkerCounterSeal2": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "surveyorSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "surveyorCounterSeal": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "surveyorCounterSeal2": {
-                        "type": "string",
-                        "example": null
-                    },
-                    "stemNo": {
-                        "type": "string",
-                        "example": "SO20250500127"
-                    },
-                    "purchaseOrderNo": {
-                        "type": "string",
-                        "example": "PO1234567890"
-                    },
-                    "attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Attachment"
-                        }
-                    }
-                }
-            },
-            "Loading": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "example": "3585"
-                    },
-                    "supplySource": {
-                        "$ref": "#/components/schemas/SupplySource"
-                    },
-                    "fuelTypeName": {
-                        "type": "string",
-                        "description": "[NEW] Product name.",
-                        "example": "VLSFO380"
-                    },
-                    "fuelTypeCode": {
-                        "type": "string",
-                        "example": "VLSFO380"
-                    },
-                    "refItemNo": {
-                        "type": "number",
-                        "example": 1
-                    },
-                    "operationDate": {
-                        "type": "string",
-                        "format": "date",
-                        "example": "2023-10-01"
-                    },
-                    "receiveVesselName": {
-                        "type": "string",
-                        "example": "ABC VESSEL"
-                    },
-                    "receiveVesselImoNo": {
-                        "type": "string",
-                        "example": "1234567"
-                    },
-                    "receiveVesselGst": {
-                        "type": "string",
-                        "example": "14965"
-                    },
-                    "receiveVesselLicenseNo": {
-                        "type": "string",
-                        "example": "SB 1234X"
-                    },
-                    "deliveryLocationCode": {
-                        "type": "string",
-                        "example": "ASSPU"
-                    },
-                    "deliveryLocationName": {
-                        "type": "string",
-                        "example": "RAFFLES RESERVED ANCH"
-                    },
-                    "deliveryType": {
-                        "type": "string",
-                        "example": "MFM"
-                    },
-                    "suppliedQuantity": {
-                        "type": "string",
-                        "example": "997",
-                        "description": "Quantity from supply source eg CQ/BL/BDN."
-                    },
-                    "suppliedQuantityMFM": {
-                        "type": "string",
-                        "example": "998",
-                        "description": "Quantity from MFM measurement."
-                    },
-                    "alongsideTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 11:00:00"
-                    },
-                    "commencePumpingTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 12:00:00"
-                    },
-                    "completePumpingTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 14:00:00"
-                    },
-                    "castOffTime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 14:00:00"
-                    },
-                    "stemNo": {
-                        "type": "string",
-                        "example": "SO20250500127"
-                    },
-                    "attachments": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Attachment"
-                        }
-                    }
-                }
-            },
-            "SupplySource": {
-                "type": "object",
-                "description": "[NEW] Information about the supplying source.",
-                "x-introduced-in": "v1.1",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "barge",
-                            "terminal",
-                            "truck"
-                        ],
-                        "description": "Indicates the type of supplying source (e.g. terminal, barge, or truck).",
-                        "example": "barge"
-                    },
-                    "registeredName": {
-                        "type": "string",
-                        "description": "Name of the supplying source.",
-                        "example": "GOLDEN BUNKER 1"
-                    },
-                    "registeredNo": {
-                        "type": "string",
-                        "description": "License number of the supplying source.",
-                        "example": "SB 1243X"
-                    }
-                },
-                "required": [
-                    "type",
-                    "licenseName",
-                    "licenseNo"
-                ]
-            },
-            "Attachment": {
-                "type": "object",
-                "properties": {
-                    "fileName": {
-                        "type": "string",
-                        "example": "breq"
-                    },
-                    "fileType": {
-                        "type": "string",
-                        "example": "pdf"
-                    },
-                    "fileContent": {
-                        "type": "string",
-                        "description": "Base64-encoded file content",
-                        "example": "JVBERi0xLjUKJeLjz9MKMyAwIG9iago8PC9Db2xvclNwYWNlL0RldmljZUdyYXkvU3VidHlwZS9JbWFnZS9IZWlnaHQgMzMzL0ZpbHRlci9GbGF0ZURlY29kZS9UeXBlL1hPYmplY3QvV2lkdGggMjQ4MC9MZW5ndGggODIyL0JpdHNQZXJDb21wb25lbnQgOD4"
-                    }
-                },
-                "required": [
-                    "fileName",
-                    "fileContent"
-                ]
-            },
-            "ErrorResponse": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Request rejected"
-                    },
-                    "errorCode": {
-                        "type": "string",
-                        "example": "1234"
-                    },
-                    "errorDescription": {
-                        "type": "string",
-                        "example": "Database connection failed"
-                    }
-                }
-            },
-            "SuccessResponse": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Request accepted"
-                    },
-                    "data": {
-                        "type": "object"
-                    }
-                }
-            },
-            "AuthRequest": {
-                "type": "object",
-                "properties": {
-                    "username": {
-                        "type": "string",
-                        "example": "admin"
-                    },
-                    "password": {
-                        "type": "string",
-                        "example": "secret123"
-                    }
-                },
-                "required": [
-                    "username",
-                    "password"
-                ]
-            },
-            "AuthResponse": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "string",
-                        "example": "success"
-                    },
-                    "token": {
-                        "type": "string",
-                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    }
-                }
-            },
-            "EventData": {
-                "description": "Event-specific payload.",
-                "oneOf": [
-                    {
-                        "$ref": "#/components/schemas/EventOperationAlongside"
-                    },
-                    {
-                        "$ref": "#/components/schemas/EventOperationCastoff"
-                    },
-                    {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BDN"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Loading"
-                            }
-                        ],
-                        "description": "Returned when event = operation.complete. Matches GET document response."
-                    }
-                ]
-            },
-            "EventOperationAlongside": {
-                "type": "object",
-                "properties": {
-                    "stemNo": {
-                        "type": "string",
-                        "example": "SO20250500127"
-                    },
-                    "refItemNo": {
-                        "type": "number",
-                        "example": 1
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2026-03-13T14:30:00+08:00",
-                        "description": "Timestamp of the event in ISO 8601 format including timezone offset."
-                    }
-                }
-            },
-            "EventOperationCastoff": {
-                "type": "object",
-                "properties": {
-                    "stemNo": {
-                        "type": "string",
-                        "example": "SO20250500127"
-                    },
-                    "refItemNo": {
-                        "type": "number",
-                        "example": 1
-                    },
-                    "timestamp": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2026-03-13T14:30:00+08:00",
-                        "description": "Timestamp of the event in ISO 8601 format including timezone offset."
-                    }
-                }
-            },
-            "EventOperationComplete": {
-                "type": "object",
-                "properties": {
-                    "operation": {
-                        "type": "string",
-                        "enum": [
-                            "delivery",
-                            "transfer",
-                            "loading"
-                        ]
-                    },
-                    "document": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/components/schemas/BDN"
-                            },
-                            {
-                                "$ref": "#/components/schemas/Loading"
-                            }
-                        ]
-                    }
-                }
-            }
-        }
+      }
     }
+  ],
+  "tags": [
+    {
+      "name": "External IBMS Webhooks",
+      "description": "Webhook registration and event triggering for external IBMS integrations"
+    }
+  ],
+  "paths": {
+    "/external/ibms/v1.1/webhook/event/trigger": {
+      "post": {
+        "tags": ["External IBMS Webhooks"],
+        "operationId": "triggerIbmsWebhookEvent",
+        "summary": "Trigger a webhook event for an order",
+        "description": "Queues a webhook event for the caller's latest active registered webhook.\n\nProcessing order:\n1. Authenticate the JWT (`token` header or cookie).\n2. Resolve the caller's latest **active** webhook registration; `401` if none exists.\n3. Validate `event` against the globally allowed event types.\n4. Validate `event` is one of the event types that webhook registration subscribed to.\n5. Require a non-empty `stemNo`.\n6. Derive the order id and push the event onto the delivery queue.",
+        "security": [
+          { "TokenHeaderAuth": [] },
+          { "TokenCookieAuth": [] }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WebhookEventTriggerRequest" },
+              "examples": {
+                "withRefItemNo": {
+                  "summary": "Order with a ref item number — resolves to order id \"S12345-1\"",
+                  "value": {
+                    "event": "operation.complete",
+                    "stemNo": "S12345",
+                    "refItemNo": "1"
+                  }
+                },
+                "withoutRefItemNo": {
+                  "summary": "Order without a ref item number — resolves to order id \"S12345\"",
+                  "value": {
+                    "event": "operation.complete",
+                    "stemNo": "S12345",
+                    "refItemNo": null
+                  }
+                },
+                "loadingOperation": {
+                  "summary": "Loading nomination — routes to the loading document builder",
+                  "value": {
+                    "event": "operation.complete",
+                    "stemNo": "S12345",
+                    "refItemNo": "2",
+                    "isLoading": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Event accepted and pushed onto the delivery queue.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" },
+                "example": { "message": "Pushed Event" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body — unknown event type, event type not subscribed to by the webhook registration, or missing `stemNo`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/MessageResponse" },
+                    { "$ref": "#/components/schemas/ErrorResponse" }
+                  ]
+                },
+                "examples": {
+                  "invalidEventType": {
+                    "summary": "`event` is not a recognised event type",
+                    "value": { "message": "Invalid event type" }
+                  },
+                  "eventNotAllowed": {
+                    "summary": "`event` is valid but not subscribed to by this webhook registration",
+                    "value": { "message": "Event type 'operation.castoff' is not allowed for this webhook" }
+                  },
+                  "missingStemNo": {
+                    "summary": "`stemNo` absent, null, empty, or whitespace-only",
+                    "value": { "message": "Missing stemNo" }
+                  },
+                  "malformedToken": {
+                    "summary": "Token present but could not be decoded",
+                    "value": { "error": "Signature verification failed" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed, or the caller has no active webhook registration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/AuthErrorResponse" },
+                    { "$ref": "#/components/schemas/StatusErrorResponse" }
+                  ]
+                },
+                "examples": {
+                  "tokenNotFound": {
+                    "summary": "No `token` header or cookie supplied",
+                    "value": { "error": "Token not found", "token_exist": false }
+                  },
+                  "invalidToken": {
+                    "summary": "Token is blacklisted",
+                    "value": { "error": "Invalid token", "token_exist": false }
+                  },
+                  "noActiveWebhook": {
+                    "summary": "Caller has not registered an active webhook",
+                    "value": { "status": "No active webhook found for user" }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Returned by the authentication middleware when the token decodes but fails the validity check. Legacy behaviour — treat as an authentication failure.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "example": { "error": "Not authorized!" }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error while queueing the event.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorMessageResponse" },
+                "example": {
+                  "message": "Error processing webhook",
+                  "error": "Unexpected exception: ..."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "TokenHeaderAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "token",
+        "description": "Raw JWT in a `token` header. Note this is **not** an `Authorization: Bearer` header — the value is the bare token."
+      },
+      "TokenCookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token",
+        "description": "Raw JWT in a `token` cookie. Accepted as an alternative to the `token` header; the header takes precedence when both are present."
+      }
+    },
+    "schemas": {
+      "WebhookEventTriggerRequest": {
+        "type": "object",
+        "required": ["event", "stemNo"],
+        "additionalProperties": false,
+        "properties": {
+          "event": {
+            "type": "string",
+            "description": "The operation event being reported. Must also be one of the event types the caller's webhook registration subscribed to.",
+            "enum": [
+              "operation.alongside",
+              "operation.castoff",
+              "operation.complete"
+            ],
+            "example": "operation.complete"
+          },
+          "stemNo": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stem number of the order. Required and non-empty; whitespace-only values are rejected. Numeric values are coerced to string server-side, but sending a string is recommended.",
+            "example": "S12345"
+          },
+          "refItemNo": {
+            "type": "string",
+            "nullable": true,
+            "description": "Reference item number of the order line. Optional — may be omitted, `null`, or an empty string. When present and non-empty, the internal order id becomes `{stemNo}-{refItemNo}`; otherwise it is just `{stemNo}`. Whitespace-only values are treated as empty.",
+            "example": "1"
+          },
+          "isLoading": {
+            "type": "boolean",
+            "default": false,
+            "description": "Routing flag. When `true` the event is resolved against loading nominations and the worker builds the loading document; when `false` (default) it follows the delivery order path.",
+            "example": false
+          }
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" }
+        }
+      },
+      "ErrorMessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "error": { "type": "string" }
+        }
+      },
+      "AuthErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "token_exist": { "type": "boolean" }
+        }
+      },
+      "StatusErrorResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Authentication failure reason. Note this field is named `status`, not `error`."
+          }
+        }
+      }
+    }
+  }
 }
