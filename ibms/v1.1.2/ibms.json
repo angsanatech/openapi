@@ -397,6 +397,185 @@
                     }
                 }
             }
+        },
+        "/external/ibms/v1.1/webhook/event/trigger": {
+            "post": {
+                "tags": [
+                    "External IBMS Webhooks"
+                ],
+                "operationId": "triggerIbmsWebhookEvent",
+                "summary": "Trigger a webhook event for an order",
+                "description": "Queues a webhook event for the caller's latest active registered webhook.\n\nProcessing order:\n1. Authenticate the JWT (`token` header or cookie).\n2. Resolve the caller's latest **active** webhook registration; `401` if none exists.\n3. Validate `event` against the globally allowed event types.\n4. Validate `event` is one of the event types that webhook registration subscribed to.\n5. Require a non-empty `stemNo`.\n6. Derive the order id and push the event onto the delivery queue.",
+                "security": [
+                    {
+                        "TokenHeaderAuth": []
+                    },
+                    {
+                        "TokenCookieAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WebhookEventTriggerRequest"
+                            },
+                            "examples": {
+                                "withRefItemNo": {
+                                    "summary": "Order with a ref item number — resolves to order id \"S12345-1\"",
+                                    "value": {
+                                        "event": "operation.complete",
+                                        "stemNo": "S12345",
+                                        "refItemNo": "1"
+                                    }
+                                },
+                                "withoutRefItemNo": {
+                                    "summary": "Order without a ref item number — resolves to order id \"S12345\"",
+                                    "value": {
+                                        "event": "operation.complete",
+                                        "stemNo": "S12345",
+                                        "refItemNo": null
+                                    }
+                                },
+                                "loadingOperation": {
+                                    "summary": "Loading nomination — routes to the loading document builder",
+                                    "value": {
+                                        "event": "operation.complete",
+                                        "stemNo": "S12345",
+                                        "refItemNo": "2",
+                                        "isLoading": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Event accepted and pushed onto the delivery queue.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageResponse"
+                                },
+                                "example": {
+                                    "message": "Pushed Event"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body — unknown event type, event type not subscribed to by the webhook registration, or missing `stemNo`.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/MessageResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ErrorResponse"
+                                        }
+                                    ]
+                                },
+                                "examples": {
+                                    "invalidEventType": {
+                                        "summary": "`event` is not a recognised event type",
+                                        "value": {
+                                            "message": "Invalid event type"
+                                        }
+                                    },
+                                    "eventNotAllowed": {
+                                        "summary": "`event` is valid but not subscribed to by this webhook registration",
+                                        "value": {
+                                            "message": "Event type 'operation.castoff' is not allowed for this webhook"
+                                        }
+                                    },
+                                    "missingStemNo": {
+                                        "summary": "`stemNo` absent, null, empty, or whitespace-only",
+                                        "value": {
+                                            "message": "Missing stemNo"
+                                        }
+                                    },
+                                    "malformedToken": {
+                                        "summary": "Token present but could not be decoded",
+                                        "value": {
+                                            "error": "Signature verification failed"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication failed, or the caller has no active webhook registration.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/AuthErrorResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/StatusErrorResponse"
+                                        }
+                                    ]
+                                },
+                                "examples": {
+                                    "tokenNotFound": {
+                                        "summary": "No `token` header or cookie supplied",
+                                        "value": {
+                                            "error": "Token not found",
+                                            "token_exist": false
+                                        }
+                                    },
+                                    "invalidToken": {
+                                        "summary": "Token is blacklisted",
+                                        "value": {
+                                            "error": "Invalid token",
+                                            "token_exist": false
+                                        }
+                                    },
+                                    "noActiveWebhook": {
+                                        "summary": "Caller has not registered an active webhook",
+                                        "value": {
+                                            "status": "No active webhook found for user"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "402": {
+                        "description": "Returned by the authentication middleware when the token decodes but fails the validity check. Legacy behaviour — treat as an authentication failure.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "error": "Not authorized!"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Unexpected server error while queueing the event.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorMessageResponse"
+                                },
+                                "example": {
+                                    "message": "Error processing webhook",
+                                    "error": "Unexpected exception: ..."
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
