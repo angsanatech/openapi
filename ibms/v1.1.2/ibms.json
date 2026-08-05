@@ -2,7 +2,7 @@
     "openapi": "3.0.3",
     "info": {
         "title": "iBMS API Documentation",
-        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|",
+        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|",
         "version": "1.1.2-Build17Jun2026"
     },
     "servers": [
@@ -328,14 +328,139 @@
                 }
             }
         },
-        "/webhook/event": {
+        "/external/ibms/v1.1/webhook/event/{operation}": {
+            "post": {
+                "tags": [
+                    "iBMS"
+                ],
+                "operationId": "triggerIbmsWebhookEvent",
+                "summary": "Trigger a webhook event for a nomination.",
+                "description": "This endpoint is used when the application has missed a webhook event at the callback URL and needs to request that the event be posted to the callback URL again.",
+                "security": [
+                    {
+                        "TokenHeaderAuth": []
+                    },
+                    {
+                        "TokenCookieAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "operation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "delivery",
+                                "transfer",
+                                "loading"
+                            ]
+                        },
+                        "description": "Type of operation."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "event",
+                                    "stemNo"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                    "event": {
+                                        "type": "string",
+                                        "description": "The operation event being reported. Must also be one of the event types the caller's webhook registration subscribed to.",
+                                        "enum": [
+                                            "operation.alongside",
+                                            "operation.castoff",
+                                            "operation.complete"
+                                        ],
+                                        "example": "operation.complete"
+                                    },
+                                    "stemNo": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Stem number of the order. Required and non-empty; whitespace-only values are rejected. Numeric values are coerced to string server-side, but sending a string is recommended.",
+                                        "example": "SO20250500127"
+                                    },
+                                    "refItemNo": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "Reference item number of the order line. Optional — may be omitted, `null`, or an empty string. When present and non-empty, the internal order id becomes `{stemNo}-{refItemNo}`; otherwise it is just `{stemNo}`. Whitespace-only values are treated as empty.",
+                                        "example": "1"
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "withRefItemNo": {
+                                    "summary": "Nomination with refItemNumber",
+                                    "value": {
+                                        "event": "operation.complete",
+                                        "stemNo": "S12345",
+                                        "refItemNo": "1"
+                                    }
+                                },
+                                "withoutRefItemNo": {
+                                    "summary": "Nomination without refItemNumber",
+                                    "value": {
+                                        "event": "operation.complete",
+                                        "stemNo": "S12345"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/{callbackUrl}": {
             "post": {
                 "tags": [
                     "Webhook Events"
                 ],
                 "summary": "Webhook notification on iBMS events",
-                "description": "Push notification from iBMS server to the API client on registered events.",
+                "description": "Push notification from iBMS server to the API client on registered events at the registered callback URL.",
                 "parameters": [
+                    {
+                        "name": "callbackUrl",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Callback URL path registered by the API client for receiving webhook event notifications.",
+                        "example": "https://client.com/my-callback"
+                    },
                     {
                         "name": "Authorization",
                         "in": "header",
@@ -394,185 +519,6 @@
                     },
                     "401": {
                         "description": "Invalid authentication token"
-                    }
-                }
-            }
-        },
-        "/external/ibms/v1.1/webhook/event/trigger": {
-            "post": {
-                "tags": [
-                    "External IBMS Webhooks"
-                ],
-                "operationId": "triggerIbmsWebhookEvent",
-                "summary": "Trigger a webhook event for an order",
-                "description": "Queues a webhook event for the caller's latest active registered webhook.\n\nProcessing order:\n1. Authenticate the JWT (`token` header or cookie).\n2. Resolve the caller's latest **active** webhook registration; `401` if none exists.\n3. Validate `event` against the globally allowed event types.\n4. Validate `event` is one of the event types that webhook registration subscribed to.\n5. Require a non-empty `stemNo`.\n6. Derive the order id and push the event onto the delivery queue.",
-                "security": [
-                    {
-                        "TokenHeaderAuth": []
-                    },
-                    {
-                        "TokenCookieAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/WebhookEventTriggerRequest"
-                            },
-                            "examples": {
-                                "withRefItemNo": {
-                                    "summary": "Order with a ref item number — resolves to order id \"S12345-1\"",
-                                    "value": {
-                                        "event": "operation.complete",
-                                        "stemNo": "S12345",
-                                        "refItemNo": "1"
-                                    }
-                                },
-                                "withoutRefItemNo": {
-                                    "summary": "Order without a ref item number — resolves to order id \"S12345\"",
-                                    "value": {
-                                        "event": "operation.complete",
-                                        "stemNo": "S12345",
-                                        "refItemNo": null
-                                    }
-                                },
-                                "loadingOperation": {
-                                    "summary": "Loading nomination — routes to the loading document builder",
-                                    "value": {
-                                        "event": "operation.complete",
-                                        "stemNo": "S12345",
-                                        "refItemNo": "2",
-                                        "isLoading": true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Event accepted and pushed onto the delivery queue.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/MessageResponse"
-                                },
-                                "example": {
-                                    "message": "Pushed Event"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body — unknown event type, event type not subscribed to by the webhook registration, or missing `stemNo`.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/MessageResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/TokenErrorResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "invalidEventType": {
-                                        "summary": "`event` is not a recognised event type",
-                                        "value": {
-                                            "message": "Invalid event type"
-                                        }
-                                    },
-                                    "eventNotAllowed": {
-                                        "summary": "`event` is valid but not subscribed to by this webhook registration",
-                                        "value": {
-                                            "message": "Event type 'operation.castoff' is not allowed for this webhook"
-                                        }
-                                    },
-                                    "missingStemNo": {
-                                        "summary": "`stemNo` absent, null, empty, or whitespace-only",
-                                        "value": {
-                                            "message": "Missing stemNo"
-                                        }
-                                    },
-                                    "malformedToken": {
-                                        "summary": "Token present but could not be decoded",
-                                        "value": {
-                                            "error": "Signature verification failed"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Authentication failed, or the caller has no active webhook registration.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/AuthErrorResponse"
-                                        },
-                                        {
-                                            "$ref": "#/components/schemas/StatusErrorResponse"
-                                        }
-                                    ]
-                                },
-                                "examples": {
-                                    "tokenNotFound": {
-                                        "summary": "No `token` header or cookie supplied",
-                                        "value": {
-                                            "error": "Token not found",
-                                            "token_exist": false
-                                        }
-                                    },
-                                    "invalidToken": {
-                                        "summary": "Token is blacklisted",
-                                        "value": {
-                                            "error": "Invalid token",
-                                            "token_exist": false
-                                        }
-                                    },
-                                    "noActiveWebhook": {
-                                        "summary": "Caller has not registered an active webhook",
-                                        "value": {
-                                            "status": "No active webhook found for user"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "402": {
-                        "description": "Returned by the authentication middleware when the token decodes but fails the validity check. Legacy behaviour — treat as an authentication failure.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TokenErrorResponse"
-                                },
-                                "example": {
-                                    "error": "Not authorized!"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Unexpected server error while queueing the event.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorMessageResponse"
-                                },
-                                "example": {
-                                    "message": "Error processing webhook",
-                                    "error": "Unexpected exception: ..."
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -1235,99 +1181,6 @@
                                 "$ref": "#/components/schemas/Loading"
                             }
                         ]
-                    }
-                }
-            },
-            "WebhookEventTriggerRequest": {
-                "type": "object",
-                "required": [
-                    "event",
-                    "stemNo"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                    "event": {
-                        "type": "string",
-                        "description": "The operation event being reported. Must also be one of the event types the caller's webhook registration subscribed to.",
-                        "enum": [
-                            "operation.alongside",
-                            "operation.castoff",
-                            "operation.complete"
-                        ],
-                        "example": "operation.complete"
-                    },
-                    "stemNo": {
-                        "type": "string",
-                        "minLength": 1,
-                        "description": "Stem number of the order. Required and non-empty; whitespace-only values are rejected. Numeric values are coerced to string server-side, but sending a string is recommended.",
-                        "example": "SO20250500127"
-                    },
-                    "refItemNo": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Reference item number of the order line. Optional — may be omitted, `null`, or an empty string. When present and non-empty, the internal order id becomes `{stemNo}-{refItemNo}`; otherwise it is just `{stemNo}`. Whitespace-only values are treated as empty.",
-                        "example": "1"
-                    },
-                    "isLoading": {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "Routing flag. When `true` the event is resolved against loading nominations and the worker builds the loading document; when `false` (default) it follows the delivery order path.",
-                        "example": false
-                    }
-                }
-            },
-            "MessageResponse": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Pushed Event"
-                    }
-                }
-            },
-            "ErrorMessageResponse": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Error processing webhook"
-                    },
-                    "error": {
-                        "type": "string",
-                        "example": "Unexpected exception: ..."
-                    }
-                }
-            },
-            "TokenErrorResponse": {
-                "type": "object",
-                "description": "Bare error shape returned by the authentication middleware. Distinct from ErrorResponse, which uses message/errorCode/errorDescription.",
-                "properties": {
-                    "error": {
-                        "type": "string",
-                        "example": "Not authorized!"
-                    }
-                }
-            },
-            "AuthErrorResponse": {
-                "type": "object",
-                "properties": {
-                    "error": {
-                        "type": "string",
-                        "example": "Token not found"
-                    },
-                    "token_exist": {
-                        "type": "boolean",
-                        "example": false
-                    }
-                }
-            },
-            "StatusErrorResponse": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "string",
-                        "description": "Authentication failure reason. Note this field is named `status`, not `error`.",
-                        "example": "No active webhook found for user"
                     }
                 }
             }
