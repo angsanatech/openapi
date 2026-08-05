@@ -285,7 +285,7 @@
                                     "callbackUrl": {
                                         "type": "string",
                                         "format": "uri",
-                                        "example": "https://client.com/my-callback"
+                                        "example": "https://client.com/webhook/event"
                                     },
                                     "events": {
                                         "type": "array",
@@ -459,7 +459,7 @@
                             "type": "string"
                         },
                         "description": "Callback URL path registered by the API client for receiving webhook event notifications.",
-                        "example": "https://client.com/my-callback"
+                        "example": "https://client.com/webhook/event"
                     },
                     {
                         "name": "Authorization",
