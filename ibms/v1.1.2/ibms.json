@@ -2,8 +2,8 @@
     "openapi": "3.0.3",
     "info": {
         "title": "iBMS API Documentation",
-        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|",
-        "version": "1.1.2-Build17Jun2026"
+        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|",
+        "version": "1.1.2-Build12Aug2026"
     },
     "servers": [
         {
@@ -82,7 +82,7 @@
                                 "loading"
                             ]
                         },
-                        "description": "[New]Type of operation being pushed."
+                        "description": "Type of bunkering operation."
                     }
                 ],
                 "requestBody": {
@@ -139,7 +139,7 @@
                                 "loading"
                             ]
                         },
-                        "description": "[New]Type of operation being pushed."
+                        "description": "Type of bunkering operation."
                     }
                 ],
                 "requestBody": {
@@ -148,6 +148,63 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/Nomination"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "iBMS"
+                ],
+                "summary": "[New] Patch a nomination",
+                "parameters": [
+                    {
+                        "name": "operation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "delivery",
+                                "transfer",
+                                "loading"
+                            ]
+                        },
+                        "description": "Type of operation being pushed."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/NominationPatch"
                             }
                         }
                     }
@@ -528,6 +585,9 @@
         "schemas": {
             "Nomination": {
                 "type": "object",
+                "required": [
+                    "stemNo"
+                ],
                 "properties": {
                     "agent": {
                         "type": "string",
@@ -661,6 +721,30 @@
                     }
                 }
             },
+            "NominationPatch": {
+                "type": "object",
+                "required": [
+                    "stemNo"
+                ],
+                "properties": {
+                    "stemNo": {
+                        "type": "string",
+                        "example": "SO20250500127"
+                    },
+                    "refItemNo": {
+                        "type": "number",
+                        "example": 1
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "cancel",
+                            "restore"
+                        ],
+                        "example": "cancel"
+                    }
+                }
+            },
             "BDN": {
                 "type": "object",
                 "properties": {
@@ -678,7 +762,7 @@
                     },
                     "fuelTypeName": {
                         "type": "string",
-                        "description": "[NEW] Product name",
+                        "description": "Product name",
                         "example": "VLSFO380"
                     },
                     "fuelTypeCode": {
@@ -902,7 +986,7 @@
                     },
                     "fuelTypeName": {
                         "type": "string",
-                        "description": "[NEW] Product name.",
+                        "description": "Product name.",
                         "example": "VLSFO380"
                     },
                     "fuelTypeCode": {
@@ -990,7 +1074,7 @@
             },
             "SupplySource": {
                 "type": "object",
-                "description": "[NEW] Information about the supplying source.",
+                "description": "Information about the supplying source.",
                 "x-introduced-in": "v1.1",
                 "properties": {
                     "type": {
