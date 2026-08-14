@@ -597,6 +597,10 @@
                         "type": "string",
                         "example": "JASON POON +65 1234 5678"
                     },
+                    "agentEmail": {
+                        "type": "string",
+                        "example": "Mary Ho"
+                    },
                     "bargeName": {
                         "type": "string",
                         "description": "Name of the barge used for the supply when supplySource='barge'",
