@@ -2,8 +2,8 @@
     "openapi": "3.0.3",
     "info": {
         "title": "iBMS API Documentation",
-        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|",
-        "version": "1.1.2-Build12Aug2026"
+        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|14Aug2026 | Added chief engineer name and email|\n|",
+        "version": "1.1.2-Build14Aug2026"
     },
     "servers": [
         {
@@ -667,9 +667,17 @@
                     },
                     "surveyor": {
                         "type": "string",
-                        "example": "SURVEYOR NAME"
+                        "example": "JOE LIM"
                     },
                     "surveyorEmail": {
+                        "type": "string",
+                        "example": ""
+                    },
+                    "chiefEngineer": {
+                        "type": "string",
+                        "example": "PAUL TAN"
+                    },
+                    "chiefEngineerEmail": {
                         "type": "string",
                         "example": ""
                     },
