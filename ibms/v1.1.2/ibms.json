@@ -2,8 +2,8 @@
     "openapi": "3.0.3",
     "info": {
         "title": "iBMS API Documentation",
-        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|14Aug2026 | Added chief engineer name and email|\n|28Aug2026 | Add 'all-in-one' option for file attachment|\n|",
-        "version": "1.1.2-Build28Aug2026"
+        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|14Aug2026 | Added chief engineer name and email|\n|28Aug2026 | Add 'all-in-one' option for file attachment|\n|10Sep2026 | Add contact number and company name for agent, chief engineer and surveyor|\n|",
+        "version": "1.1.2-Build10Sep2026"
     },
     "servers": [
         {
@@ -592,7 +592,7 @@
                 "properties": {
                     "agent": {
                         "type": "string",
-                        "example": "ABC Shipping"
+                        "example": "Alan Ho"
                     },
                     "agentContactNo": {
                         "type": "string",
@@ -601,6 +601,10 @@
                     "agentEmail": {
                         "type": "string",
                         "example": "Mary Ho"
+                    },
+                    "agentCompany": {
+                        "type": "string",
+                        "example": "ABC Shipping"
                     },
                     "bargeName": {
                         "type": "string",
@@ -678,6 +682,14 @@
                         "type": "string",
                         "example": ""
                     },
+                    "surveyorContactNo": {
+                        "type": "string",
+                        "example": "+65 1234 5678"
+                    },
+                    "surveyorCompany": {
+                        "type": "string",
+                        "example": "ABC Shipping"
+                    },
                     "chiefEngineer": {
                         "type": "string",
                         "example": "PAUL TAN"
@@ -685,6 +697,14 @@
                     "chiefEngineerEmail": {
                         "type": "string",
                         "example": ""
+                    },
+                    "chiefEngineerContactNo": {
+                        "type": "string",
+                        "example": "+65 1234 5678"
+                    },
+                    "chiefEngineerCompany": {
+                        "type": "string",
+                        "example": "ABC Shipping"
                     },
                     "vesselIMO": {
                         "type": "string",
