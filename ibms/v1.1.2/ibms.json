@@ -710,6 +710,11 @@
                         "type": "string",
                         "example": "1234567"
                     },
+                    "vesselMmsi": {
+                        "type": "string",
+                        "description": "[NEW] MMSI of the receiving vessel. Used when the nomination has no IMO; vesselIMO takes precedence when both are sent.",
+                        "example": "215250000"
+                    },
                     "vesselName": {
                         "type": "string",
                         "example": "ABC VESSEL"
@@ -838,6 +843,11 @@
                     "receiveVesselImoNo": {
                         "type": "string",
                         "example": "1234567"
+                    },
+                    "receiveVesselMmsiNo": {
+                        "type": "string",
+                        "description": "[NEW] MMSI of the receiving vessel.",
+                        "example": "215250000"
                     },
                     "receiveVesselGt": {
                         "type": "string",
