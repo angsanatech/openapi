@@ -2,8 +2,8 @@
     "openapi": "3.0.3",
     "info": {
         "title": "iBMS API Documentation",
-        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|14Aug2026 | Added chief engineer name and email|\n|28Aug2026 | Add 'all-in-one' option for file attachment|\n|10Sep2026 | Add contact number and company name for agent, chief engineer and surveyor|\n|17Sep2026 | Add loadingDocumentNo to store BL/BDN/CQ number|\n|22Sep2026 | Add vessel MMSI field to Nomination & BDN schema|\n",
-        "version": "1.1.2-Build22Sep2026"
+        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|14Aug2026 | Added chief engineer name and email|\n|28Aug2026 | Add 'all-in-one' option for file attachment|\n|10Sep2026 | Add contact number and company name for agent, chief engineer and surveyor|\n|17Sep2026 | Add loadingDocumentNo to store BL/BDN/CQ number|\n|22Sep2026 | Add vessel MMSI field to Nomination & BDN schema|\n|22Sep2026 | Add SupplyTrucks schema|\n",
+        "version": "1.1.2-Build29Sep2026"
     },
     "servers": [
         {
@@ -612,7 +612,14 @@
                         "example": "GOLDEN BUNKER 1"
                     },
                     "supplySource": {
-                        "$ref": "#/components/schemas/SupplySource"
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/SupplySource"
+                            },
+                            {
+                                "$ref": "#/components/schemas/SupplyTrucks"
+                            }
+                        ]
                     },
                     "bdnPartyName": {
                         "type": "string",
@@ -1130,7 +1137,6 @@
                         "enum": [
                             "barge",
                             "terminal",
-                            "truck"
                         ],
                         "description": "Indicates the type of supplying source (e.g. terminal, barge, or truck).",
                         "example": "barge"
@@ -1148,9 +1154,39 @@
                 },
                 "required": [
                     "type",
-                    "licenseName",
-                    "licenseNo"
+                    "registeredName",
+                    "registeredNo"
                 ]
+            },
+            "SupplyTrucks": {
+                "type": "array",
+                "description": "Information about supplying trucks.",
+                "x-introduced-in": "v1.1",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "truck"
+                            ],
+                            "example": "truck"
+                        },
+                        "registeredName": {
+                            "type": "string",
+                            "example": "TRUCK 1"
+                        },
+                        "registeredNo": {
+                            "type": "string",
+                            "example": "TR123"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "registeredName",
+                        "registeredNo"
+                    ]
+                }
             },
             "Attachment": {
                 "type": "object",
