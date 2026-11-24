@@ -234,12 +234,15 @@
                         "description": "Internal server error"
                     }
                 }
-            },
+            }
+        },
+        "/external/ibms/v1.1/{operation}/{stemNo}/{refItemNo}": {
+            "description": "Retrieve a nomination in the system",
             "get": {
                 "tags": [
                     "iBMS"
                 ],
-                "summary": "[NEW] Retrieve a nomination",
+                "summary": "Retrieve a nomination",
                 "parameters": [
                     {
                         "name": "operation",
@@ -253,7 +256,7 @@
                                 "loading"
                             ]
                         },
-                        "description": "Type of bunkering operation."
+                        "description": "Type of operation."
                     },
                     {
                         "name": "stemNo",
@@ -300,7 +303,7 @@
             }
         },
         "/external/ibms/v1.1/pull/{operation}/{stemNo}/{refItemNo}": {
-            "description": "Retrieve completed document after nomination completion",
+            "description": "Retrieve completed document after bunkering operation",
             "get": {
                 "tags": [
                     "iBMS"
