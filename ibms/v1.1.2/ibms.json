@@ -2,8 +2,8 @@
     "openapi": "3.0.3",
     "info": {
         "title": "iBMS API Documentation",
-        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|14Aug2026 | Added chief engineer name and email|\n|28Aug2026 | Add 'all-in-one' option for file attachment|\n|10Sep2026 | Add contact number and company name for agent, chief engineer and surveyor|\n|17Sep2026 | Add loadingDocumentNo to store BL/BDN/CQ number|\n|22Sep2026 | Add vessel MMSI field to Nomination & BDN schema|\n|22Sep2026 | Add SupplyTrucks schema|\n",
-        "version": "1.1.2-Build29Sep2026"
+        "description": "This is the API documentation for the iBMS system, which provides access to various endpoints for managing and retrieving data related to the eBDN.\n\n## Build History\n\n| Build | Changes |\n|---------|---------|\n| 17Jun2026 | Added country field to nomination |\n|5Aug2026 | Added endpoint to trigger webhook event |\n|12Aug2026 | Added patch nomination endpoint to cancel/restore a nomination|\n|14Aug2026 | Added chief engineer name and email|\n|28Aug2026 | Add 'all-in-one' option for file attachment|\n|10Sep2026 | Add contact number and company name for agent, chief engineer and surveyor|\n|17Sep2026 | Add loadingDocumentNo to store BL/BDN/CQ number|\n|22Sep2026 | Add vessel MMSI field to Nomination & BDN schema|\n|22Sep2026 | Add SupplyTrucks schema|\n|24Nov2026 | Add nomination query method|\n",
+        "version": "1.1.2-Build24Nov2026"
     },
     "servers": [
         {
@@ -182,7 +182,7 @@
                 "tags": [
                     "iBMS"
                 ],
-                "summary": "[New] Patch a nomination",
+                "summary": "Patch a nomination",
                 "parameters": [
                     {
                         "name": "operation",
@@ -234,6 +234,69 @@
                         "description": "Internal server error"
                     }
                 }
+            },
+            "get": {
+                "tags": [
+                    "iBMS"
+                ],
+                "summary": "[NEW] Retrieve a nomination",
+                "parameters": [
+                    {
+                        "name": "operation",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "delivery",
+                                "transfer",
+                                "loading"
+                            ]
+                        },
+                        "description": "Type of bunkering operation."
+                    },
+                    {
+                        "name": "stemNo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "refItemNo",
+                        "in": "path",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Nomination retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Nomination"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
             }
         },
         "/external/ibms/v1.1/pull/{operation}/{stemNo}/{refItemNo}": {
@@ -256,7 +319,7 @@
                                 "loading"
                             ]
                         },
-                        "description": "[New] Type of operation being pushed."
+                        "description": "Type of operation being pushed."
                     },
                     {
                         "name": "stemNo",
@@ -269,7 +332,7 @@
                     {
                         "name": "refItemNo",
                         "in": "path",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -719,7 +782,7 @@
                     },
                     "vesselMmsi": {
                         "type": "string",
-                        "description": "[NEW] MMSI of the receiving vessel. vesselIMO takes precedence when both are sent.",
+                        "description": "MMSI of the receiving vessel. vesselIMO takes precedence when both are sent.",
                         "example": "215250000"
                     },
                     "vesselName": {
@@ -853,7 +916,7 @@
                     },
                     "receiveVesselMmsiNo": {
                         "type": "string",
-                        "description": "[NEW] MMSI of the receiving vessel.",
+                        "description": "MMSI of the receiving vessel.",
                         "example": "215250000"
                     },
                     "receiveVesselGt": {
@@ -1136,7 +1199,7 @@
                         "type": "string",
                         "enum": [
                             "barge",
-                            "terminal",
+                            "terminal"
                         ],
                         "description": "Indicates the type of supplying source (e.g. terminal, barge, or truck).",
                         "example": "barge"
